@@ -93,12 +93,12 @@ def init_weight_list(weight_specs, policy, env):
     dev_percents = [policy.w_disk_percent, policy.w_cpu_percent, policy.w_gpu_percent]
     dev_choices = [env.disk, env.cpu, env.gpu]
 
-    sizes = [np.prod(spec[0]) for spec in weight_specs]
+    sizes = [np.prod(spec[0]) for spec in weight_specs] # 计算每个矩阵的参数数量
     sizes_cumsum = np.cumsum(sizes)
     ret = []
     for i in range(len(weight_specs)):
         mid_percent = (sizes_cumsum[i] - sizes[i] / 2) / sizes_cumsum[-1]
-        home = get_choice(mid_percent * 100, dev_percents, dev_choices)
+        home = get_choice(mid_percent * 100, dev_percents, dev_choices) # 根据当前矩阵在当前层所有矩阵中的参数占比，选择一个设备
         shape, dtype, filename = weight_specs[i]
 
         if len(shape) < 2:
