@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 
-from flexllmgen.utils import (GB, T, cpu_mem_stats, vector_gather,
+from flexllmgen.utils import (GB, MB, T, cpu_mem_stats, vector_gather,
     np_dtype_to_torch_dtype, torch_dtype_to_np_dtype,
     torch_dtype_to_num_bytes)
 
@@ -879,7 +879,7 @@ def copy_worker_func(queue, cuda_id):
     """The copy worker thread."""
     torch.cuda.set_device(cuda_id)
 
-    cpu_buf = torch.empty((1 * GB,), dtype=torch.float16, pin_memory=True)
+    cpu_buf = torch.empty((20 * MB,), dtype=torch.float16, pin_memory=True)
     copy_stream = torch.cuda.Stream()
 
     with torch.cuda.stream(copy_stream):
@@ -887,8 +887,10 @@ def copy_worker_func(queue, cuda_id):
             item = queue.get()
             if item is None:
                 queue.task_done()
+                print("Copy worker thread exiting")
                 return
 
+            print("Copy worker thread entering")
             dst, dst_indices, src, src_indices = item
             src_data = map_to_torch_tensor(src, src_indices)
             dst_data = map_to_torch_tensor(dst, dst_indices)
